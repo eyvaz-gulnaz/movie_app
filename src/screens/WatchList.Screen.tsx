@@ -6,16 +6,14 @@ import {
   View,
 } from 'react-native';
 import React from 'react';
-import {fetchTopRatedMovies} from '../apis/movies';
-import {useInfiniteQuery} from '@tanstack/react-query';
+import {useQuery} from '@tanstack/react-query';
 import {MovieListItem} from '../components/MovieListItem';
+import {fetchWatchList} from '../apis/watchlist';
 
-export const HomeScreen = () => {
-  const {data, isLoading, error, fetchNextPage} = useInfiniteQuery({
-    queryKey: ['movies'],
-    queryFn: fetchTopRatedMovies,
-    initialPageParam: 1,
-    getNextPageParam: (lastPage, pages) => pages.length + 1,
+export const WatchListScreen = () => {
+  const {data, isLoading, error} = useQuery({
+    queryKey: ['watchlist'],
+    queryFn: fetchWatchList,
   });
 
   if (isLoading) {
@@ -24,19 +22,14 @@ export const HomeScreen = () => {
   if (error) {
     return <Text>Error {error.message}</Text>;
   }
-
-  const movies = data?.pages?.flat();
   return (
     <View>
       <FlatList
-        data={movies}
+        data={data}
         numColumns={2}
         renderItem={({item}) => <MovieListItem movie={item} />}
         contentContainerStyle={{gap: 5, padding: 5}}
         columnWrapperStyle={{gap: 5}}
-        onEndReached={() => {
-          fetchNextPage();
-        }}
       />
     </View>
   );

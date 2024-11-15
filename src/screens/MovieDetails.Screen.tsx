@@ -1,17 +1,32 @@
-import {ActivityIndicator, Image, StyleSheet, Text, View} from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import React, {useEffect} from 'react';
-import {useQuery} from '@tanstack/react-query';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {fetchMovie} from '../apis/movies';
 import {useNavigation, useRoute} from '@react-navigation/native';
+import {Save2} from 'iconsax-react-native';
+import {addToWatchList} from '../apis/watchlist';
 
 export const MovieDetailsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const {id} = route.params;
+  const client = useQueryClient();
 
   const {data, isLoading, error} = useQuery({
     queryKey: ['movies', id],
     queryFn: () => fetchMovie(id),
+  });
+
+  const {mutate} = useMutation({
+    mutationFn: () => addToWatchList(id),
+    onSuccess: () => client.invalidateQueries(['watchlist']),
   });
 
   useEffect(() => {
@@ -37,6 +52,14 @@ export const MovieDetailsScreen = () => {
         <Text style={{fontSize: 30, fontWeight: '500', marginVertical: 10}}>
           {data.title}
         </Text>
+        <View style={{padding: 10}}>
+          <Pressable
+            onPress={() => mutate()}
+            style={{flexDirection: 'row', gap: 5, alignItems: 'center'}}>
+            <Save2 />
+            <Text>Add to watchlist</Text>
+          </Pressable>
+        </View>
         <Text style={{fontSize: 16}}>{data.overview}</Text>
       </View>
     </View>
